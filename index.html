@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 노동인권 학교 방문 프로그램</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // 2026년 학교 데이터
+        const rawSchools = [
+            { region: "관악", name: "신림중", date: "2026-09-16", day: "수", time: "12:20~14:50" },
+            { region: "영등포", name: "여의도중학교", date: "2026-10-16", day: "금", time: "9:55~12:30" },
+            { region: "관악", name: "봉림중", date: "2026-11-06", day: "금", time: "9:00~11:35" },
+            { region: "관악", name: "인헌중", date: "2026-11-09", day: "월", time: "8:50~11:25" },
+            { region: "동작", name: "성남중학교", date: "2026-11-09", day: "월", time: "13:20~15:55" },
+            { region: "광진", name: "건대부중", date: "2026-11-11", day: "수", time: "8:50-11:25" },
+            { region: "관악", name: "미성중", date: "2026-11-12", day: "목", time: "9:00~11:35" },
+            { region: "영등포", name: "대영중학교", date: "2026-11-12", day: "목", time: "13:20~15:55" },
+            { region: "동작", name: "상현중학교", date: "2026-11-13", day: "금", time: "9:45~12:20" },
+            { region: "광진", name: "광진중", date: "2026-11-13", day: "금", time: "9:55-12:30" },
+            { region: "서초", name: "내곡중학교(1)", date: "2026-11-16", day: "월", time: "9:00~11:35" },
+            { region: "광진", name: "동대부가람중", date: "2026-11-17", day: "화", time: "9:00-11:35" },
+            { region: "서초", name: "내곡중학교(2)", date: "2026-11-17", day: "화", time: "9:00~11:35" },
+            { region: "서대문", name: "이화금란중학교", date: "2026-11-17", day: "화", time: "9:40~12:15" },
+            { region: "서대문", name: "인창중학교", date: "2026-11-18", day: "수", time: "8:40~11:15" },
+            { region: "관악", name: "성보중", date: "2026-11-18", day: "수", time: "13:20~15:55" },
+            { region: "관악", name: "신관중", date: "2026-11-23", day: "월", time: "9:55~12:30" },
+            { region: "관악", name: "봉원중", date: "2026-11-26", day: "목", time: "9:00~11:35" },
+            { region: "관악", name: "남서울중", date: "2026-11-26", day: "목", time: "9:00-11:35" },
+            { region: "영등포", name: "선유중학교", date: "2026-11-30", day: "화", time: "13:30~15:10" },
+            { region: "관악", name: "미림여고", date: "2026-12-01", day: "화", time: "9:00-11:00" },
+            { region: "광진", name: "광양중", date: "2026-12-01", day: "화", time: "13:10-15:45" },
+            { region: "도봉", name: "정의여중학교", date: "2026-12-01", day: "화", time: "13:20~16:00" },
+            { region: "관악", name: "당곡중", date: "2026-12-02", day: "수", time: "9:45~12:20" },
+            { region: "관악", name: "구암중", date: "2026-12-03", day: "목", time: "8:50~11:25" },
+            { region: "서대문", name: "가재울중학교", date: "2026-12-03", day: "목", time: "9:00~11:35" },
+            { region: "영등포", name: "영남중학교", date: "2026-12-04", day: "금", time: "9:45~12:20" },
+            { region: "광진", name: "신양중", date: "2026-12-07", day: "월", time: "9:00-11:35" },
+            { region: "도봉", name: "방학중학교", date: "2026-12-07", day: "월", time: "9:00~11:35" },
+            { region: "도봉", name: "백운중학교", date: "2026-12-08", day: "화", time: "9:00~11:35" },
+            { region: "관악", name: "삼성중", date: "2026-12-08", day: "화", time: "8:50~11:25" },
+            { region: "관악", name: "난우중", date: "2026-12-08", day: "화", time: "13:25~16:00" },
+            { region: "관악", name: "관악중", date: "2026-12-10", day: "목", time: "9:55~12:30" },
+            { region: "서초", name: "원촌중학교", date: "2026-12-11", day: "금", time: "8:50~11:25" },
+            { region: "도봉", name: "효문중학교", date: "2026-12-11", day: "금", time: "9:00~11:35" },
+            { region: "관악", name: "서울문영여중", date: "2026-12-14", day: "월", time: "12:25~15:00" },
+            { region: "동작", name: "강남중", date: "2026-12-15", day: "화", time: "8:50~11:25" }
+        ].map((s, idx) => ({ ...s, id: `school_${idx}` }));
+
+        let userName = localStorage.getItem('school_app_user_name') || '';
+        let isAdmin = false;
+        let currentViewMode = 'timeline';
+        let allBookings = JSON.parse(localStorage.getItem('school_app_bookings') || '[]');
+
+        function saveBookings() {
+            localStorage.setItem('school_app_bookings', JSON.stringify(allBookings));
+            render();
+        }
+
+        const hashPassword = (str) => {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                let char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return hash.toString();
+        };
+
+        const ADMIN_HASH = '1509442'; // '1234'
+
+        function toggleBooking(schoolId) {
+            if (!userName) return;
+            const myExistingBookingIndex = allBookings.findIndex(b => b.schoolId === schoolId && b.userName === userName);
+            
+            if (myExistingBookingIndex > -1) {
+                if (confirm(`이 학교 방문 신청을 취소하시겠습니까?`)) {
+                    allBookings.splice(myExistingBookingIndex, 1);
+                    saveBookings();
+                }
+            } else {
+                const school = rawSchools.find(s => s.id === schoolId);
+                if (confirm(`${school.name} 방문을 신청하시겠습니까?`)) {
+                    allBookings.push({
+                        id: `${schoolId}_${Date.now()}`,
+                        schoolId: schoolId,
+                        schoolName: school.name,
+                        userName: userName,
+                        timestamp: Date.now()
+                    });
+                    saveBookings();
+                }
+            }
+        }
+
+        function adminCancel(bookingId) {
+            if (!isAdmin) return;
+            if (confirm("관리자 권한으로 이 신청을 취소하시겠습니까?")) {
+                allBookings = allBookings.filter(b => b.id !== bookingId);
+                saveBookings();
+            }
+        }
+
+        window.copyForGoogleSheets = () => {
+            if (!isAdmin) return;
+            let tsvContent = "지역\t학교명\t방문일자\t요일\t시간\t신청자명\t신청일시\n";
+            const bookings = [...allBookings].sort((a, b) => a.timestamp - b.timestamp);
+
+            bookings.forEach(b => {
+                const school = rawSchools.find(s => s.id === b.schoolId) || {};
+                const dateStr = new Date(b.timestamp).toLocaleString('ko-KR');
+                const row = [ school.region || "", school.name || b.schoolName, school.date || "", school.day || "", school.time || "", b.userName, dateStr ].join("\t");
+                tsvContent += row + "\n";
+            });
+
+            const textarea = document.createElement('textarea');
+            textarea.value = tsvContent;
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                alert('✨ 데이터가 클립보드에 복사되었습니다!\n빈 구글 스프레드시트의 A1 셀을 클릭하고 [Ctrl+V]를 누르시면 표 형식 그대로 붙여넣어집니다.');
+            } catch (err) {
+                alert('복사에 실패했습니다.');
+            }
+            document.body.removeChild(textarea);
+        };
+
+        window.downloadCSV = () => {
+            if (!isAdmin) return;
+            let csvContent = "\uFEFF"; 
+            csvContent += "지역,학교명,방문일자,요일,시간,신청자명,신청일시\n";
+            const bookings = [...allBookings].sort((a, b) => a.timestamp - b.timestamp);
+
+            bookings.forEach(b => {
+                const school = rawSchools.find(s => s.id === b.schoolId) || {};
+                const dateStr = new Date(b.timestamp).toLocaleString('ko-KR');
+                const row = [ school.region || "", school.name || b.schoolName, school.date || "", school.day || "", school.time || "", b.userName, dateStr ].map(text => `"${text}"`).join(",");
+                csvContent += row + "\n";
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `2026노동인권_신청현황.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+
+        window.setUserName = () => {
+            const input = document.getElementById('userNameInput').value.trim();
+            if (input) {
+                userName = input;
+                localStorage.setItem('school_app_user_name', userName);
+                render();
+            } else {
+                alert("이름을 입력해주세요.");
+            }
+        };
+
+        window.toggleAdmin = () => {
+            if (!isAdmin) {
+                const pw = prompt('관리자 비밀번호를 입력하세요.');
+                if (pw !== null) {
+                    if (hashPassword(pw) === ADMIN_HASH) isAdmin = true;
+                    else alert('비밀번호가 일치하지 않습니다.');
+                }
+            } else {
+                isAdmin = false;
+            }
+            render();
+        };
+
+        window.setViewMode = (mode) => {
+            currentViewMode = mode;
+            render();
+        };
+
+        window.logout = () => {
+            localStorage.removeItem('school_app_user_name');
+            userName = '';
+            isAdmin = false;
+            render();
+        };
+
+        function render() {
+            const appContainer = document.getElementById('app');
+            if (!userName) appContainer.innerHTML = getLoginHTML();
+            else if (isAdmin) appContainer.innerHTML = getAdminHTML();
+            else appContainer.innerHTML = getMainHTML();
+        }
+
+        function getLoginHTML() {
+            return `
+                <div class="flex items-center justify-center min-h-screen bg-[#F8FAFC] p-4">
+                    <div class="bg-white p-6 md:p-10 rounded-[2rem] shadow-xl w-full max-w-md border border-gray-100">
+                        <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-6 mx-auto shadow-inner">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                        </div>
+                        <h1 class="text-2xl md:text-3xl font-black text-center text-gray-800 mb-2">2026 노동인권</h1>
+                        <p class="text-gray-500 text-sm md:text-base text-center mb-8 font-medium">학교 방문 프로그램 신청 시스템</p>
+                        
+                        <input type="text" id="userNameInput" placeholder="강사님 성함을 입력하세요" 
+                            class="w-full px-5 py-4 border-2 border-gray-100 bg-gray-50 rounded-2xl mb-4 focus:bg-white focus:border-blue-500 outline-none transition-all font-bold text-gray-700 text-lg"
+                            onkeypress="if(event.key === 'Enter') setUserName()">
+                        <button onclick="setUserName()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-lg hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200 active:scale-95 transform">
+                            접속하기
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderSchoolCard(school, isTimeline = false) {
+            const schoolBookings = allBookings.filter(b => b.schoolId === school.id);
+            const isMyBooking = schoolBookings.some(b => b.userName === userName);
+
+            return `
+                <div onclick="toggleBooking('${school.id}')"
+                    class="cursor-pointer bg-white p-5 rounded-2xl border-2 transition-all duration-200 active:scale-[0.98] relative overflow-hidden flex flex-col justify-between h-full
+                    ${isMyBooking ? 'border-blue-500 shadow-md ring-4 ring-blue-50' : 'border-gray-100 hover:border-gray-200 shadow-sm'}">
+                    
+                    ${isMyBooking ? '<div class="absolute top-0 right-0 bg-blue-500 text-white text-[10px] md:text-xs font-bold px-3 py-1 rounded-bl-xl shadow-sm">내 신청 ✓</div>' : ''}
+
+                    <div>
+                        <div class="flex justify-between items-start mb-3 mt-1">
+                            <span class="px-2.5 py-1 bg-gray-100 text-gray-600 text-[10px] md:text-xs font-black rounded-lg">${school.region}</span>
+                        </div>
+                        <h3 class="text-lg md:text-xl font-black text-gray-800 mb-2 leading-tight">${school.name}</h3>
+                    </div>
+                    <div class="space-y-1.5 text-xs md:text-sm text-gray-500 font-medium mt-2 bg-gray-50 p-3 rounded-xl border border-gray-100">
+                        ${!isTimeline ? `<p class="flex items-center gap-2">📅 <span class="text-gray-700 font-bold">${school.date} (${school.day})</span></p>` : ''}
+                        <p class="flex items-center gap-2">⏰ <span class="text-blue-600 font-black">${school.time}</span></p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getMainHTML() {
+            const groupedByDate = {};
+            rawSchools.forEach(s => {
+                if(!groupedByDate[s.date]) groupedByDate[s.date] = [];
+                groupedByDate[s.date].push(s);
+            });
+            const sortedDates = Object.keys(groupedByDate).sort();
+
+            let timelineHTML = `
+                <div class="space-y-8 relative 
+                    before:absolute before:inset-0 before:left-[36px] md:before:mx-auto md:before:translate-x-0 
+                    before:h-full before:w-1 before:bg-gradient-to-b before:from-transparent before:via-gray-200 before:to-transparent">
+                    ${sortedDates.map(date => {
+                        const schools = groupedByDate[date];
+                        const dayStr = schools[0].day;
+                        const month = date.split('-')[1];
+                        const day = date.split('-')[2];
+                        return `
+                            <div class="relative flex items-start md:items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                                <div class="flex items-center justify-center w-14 h-14 rounded-full border-4 border-white bg-blue-100 text-blue-600 font-black text-lg shadow-sm shrink-0 
+                                            md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 ml-[10px] md:ml-0 z-10 mt-2 md:mt-0">
+                                    ${month}
+                                </div>
+                                <div class="w-[calc(100%-5rem)] md:w-[calc(50%-3rem)] pl-4 md:px-4 py-2">
+                                    <div class="flex flex-col md:group-odd:items-end mb-3">
+                                        <span class="text-2xl md:text-3xl font-black text-gray-800 tracking-tight">${month}/${day} <span class="text-lg text-gray-400 font-bold">(${dayStr})</span></span>
+                                    </div>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                                        ${schools.map(school => renderSchoolCard(school, true)).join('')}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+
+            let cardHTML = `
+                <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5">
+                    ${rawSchools.map(school => renderSchoolCard(school)).join('')}
+                </div>
+            `;
+
+            return `
+                <div class="min-h-screen bg-[#f3f4f6] pb-24 md:pb-8">
+                    <div class="bg-white px-4 py-6 md:p-8 rounded-b-3xl shadow-sm mb-6 md:mb-8 sticky top-0 z-20">
+                        <div class="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                            <div>
+                                <h1 class="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">2026 교육 일정</h1>
+                                <p class="text-gray-500 text-sm md:text-base mt-1 font-medium">환영합니다, <span class="text-blue-600 font-black">${userName}</span>님!</p>
+                            </div>
+                            <div class="flex w-full sm:w-auto gap-2">
+                                <button onclick="toggleAdmin()" class="flex-1 sm:flex-none px-4 py-3 md:py-2.5 text-sm bg-gray-100 text-gray-600 font-bold rounded-xl active:scale-95 transition-transform">관리자</button>
+                                <button onclick="logout()" class="flex-1 sm:flex-none px-4 py-3 md:py-2.5 text-sm bg-red-50 text-red-500 font-bold rounded-xl active:scale-95 transition-transform">로그아웃</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="max-w-6xl mx-auto px-4">
+                        <div class="flex bg-gray-200/70 p-1.5 rounded-2xl w-full sm:w-fit mb-8 shadow-inner">
+                            <button onclick="setViewMode('timeline')" class="flex-1 sm:flex-none px-6 py-3 md:py-2 text-sm font-black rounded-xl transition-all ${currentViewMode === 'timeline' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-800'}">
+                                📅 타임라인
+                            </button>
+                            <button onclick="setViewMode('card')" class="flex-1 sm:flex-none px-6 py-3 md:py-2 text-sm font-black rounded-xl transition-all ${currentViewMode === 'card' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-800'}">
+                                🗂️ 전체 모아보기
+                            </button>
+                        </div>
+
+                        ${currentViewMode === 'timeline' ? timelineHTML : cardHTML}
+                    </div>
+                </div>
+            `;
+        }
+
+        function getAdminHTML() {
+            const grouped = rawSchools.map(school => {
+                const schoolBookings = allBookings.filter(b => b.schoolId === school.id);
+                return { ...school, bookings: schoolBookings };
+            }).filter(s => s.bookings.length > 0);
+
+            return `
+                <div class="min-h-screen bg-gray-50 p-4 md:p-8">
+                    <div class="max-w-6xl mx-auto">
+                        <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 md:mb-8 gap-4 bg-gray-900 text-white p-6 md:p-8 rounded-3xl shadow-xl">
+                            <div>
+                                <h1 class="text-xl md:text-2xl font-black flex items-center gap-3">
+                                    <span class="text-2xl md:text-3xl">📊</span> 전체 현황 대시보드
+                                </h1>
+                                <p class="text-xs md:text-sm text-gray-400 mt-2 font-medium">관리자 전용 페이지</p>
+                            </div>
+                            <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto mt-2 md:mt-0">
+                                <button onclick="copyForGoogleSheets()" class="w-full sm:w-auto px-5 py-3 md:py-2.5 bg-[#0F9D58] text-white rounded-xl text-sm font-black shadow-md active:scale-95 transition-transform flex items-center justify-center gap-2">
+                                    📋 시트 복사
+                                </button>
+                                <button onclick="downloadCSV()" class="w-full sm:w-auto px-5 py-3 md:py-2.5 bg-blue-600 text-white rounded-xl text-sm font-black shadow-md active:scale-95 transition-transform flex items-center justify-center gap-2">
+                                    💾 CSV 저장
+                                </button>
+                                <button onclick="toggleAdmin()" class="w-full sm:w-auto px-5 py-3 md:py-2.5 bg-white text-gray-900 rounded-xl text-sm font-black shadow-md active:scale-95 transition-transform">
+                                    뒤로가기
+                                </button>
+                            </div>
+                        </header>
+
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
+                            <div class="p-4 md:p-5 bg-white rounded-2xl border border-gray-100 shadow-sm text-center">
+                                <p class="text-[10px] md:text-xs text-gray-400 mb-1 font-bold tracking-wider">총 학교</p>
+                                <p class="text-2xl md:text-3xl font-black text-gray-800">${rawSchools.length}</p>
+                            </div>
+                            <div class="p-4 md:p-5 bg-white rounded-2xl border border-gray-100 shadow-sm text-center">
+                                <p class="text-[10px] md:text-xs text-gray-400 mb-1 font-bold tracking-wider">신청 접수</p>
+                                <p class="text-2xl md:text-3xl font-black text-green-600">${grouped.length}</p>
+                            </div>
+                            <div class="p-4 md:p-5 bg-blue-50 rounded-2xl border border-blue-100 shadow-sm text-center">
+                                <p class="text-[10px] md:text-xs text-blue-500 mb-1 font-bold tracking-wider">총 인원</p>
+                                <p class="text-2xl md:text-3xl font-black text-blue-700">${allBookings.length}<span class="text-sm md:text-lg ml-1">명</span></p>
+                            </div>
+                            <div class="p-4 md:p-5 bg-gray-50 rounded-2xl border border-gray-100 shadow-sm text-center opacity-80">
+                                <p class="text-[10px] md:text-xs text-gray-400 mb-1 font-bold tracking-wider">잔여(미신청)</p>
+                                <p class="text-2xl md:text-3xl font-black text-gray-500">${rawSchools.length - grouped.length}</p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                            ${grouped.length === 0 ? '<div class="col-span-full text-center py-20 text-gray-400 bg-white rounded-3xl border-2 border-dashed border-gray-200 font-bold text-sm">아직 신청된 내역이 없습니다.</div>' : ''}
+                            ${grouped.map(school => `
+                                <div class="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden">
+                                    <div class="bg-gray-50 px-5 py-4 border-b border-gray-100 flex justify-between items-center">
+                                        <div>
+                                            <span class="text-[10px] font-black text-blue-600 bg-blue-100 px-2 py-1 rounded-md tracking-wide">${school.region}</span>
+                                            <h2 class="text-base md:text-lg font-black text-gray-800 mt-2">${school.name}</h2>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="text-[10px] md:text-xs text-gray-500 font-bold bg-white px-2 py-1 rounded border border-gray-100">${school.date}</p>
+                                            <p class="text-xs md:text-sm font-black text-blue-600 mt-2">${school.bookings.length}명 신청</p>
+                                        </div>
+                                    </div>
+                                    <div class="p-4 md:p-5 bg-white">
+                                        <div class="space-y-2">
+                                            ${school.bookings.map(b => `
+                                                <div class="flex items-center justify-between bg-blue-50/30 px-4 py-3 rounded-2xl border border-blue-50">
+                                                    <span class="font-black text-gray-700 text-sm md:text-base flex items-center gap-2">
+                                                        <span class="bg-blue-100 text-blue-500 p-1.5 rounded-full"><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"></path></svg></span>
+                                                        ${b.userName}
+                                                    </span>
+                                                    <button onclick="adminCancel('${b.id}')" class="text-[10px] md:text-xs bg-red-50 text-red-500 px-3 py-2 rounded-xl font-black active:scale-95 transition-transform">취소</button>
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        window.onload = render;
+
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;700;900&display=swap');
+        body { font-family: 'Pretendard', sans-serif; -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div id="app"></div>
+</body>
+</html>
