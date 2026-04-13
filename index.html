@@ -11,7 +11,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
     <script>
-        // 강사님의 파이어베이스 설정값
+        // 파이어베이스 설정값
         const firebaseConfig = {
             apiKey: "AIzaSyDDQoegaPeFWypWdVsgRmzMr_Z7J6dwQt8",
             authDomain: "labor-7b138.firebaseapp.com",
@@ -22,13 +22,12 @@
             measurementId: "G-Y2JX4CVQVP"
         };
     
-        // 파이어베이스 초기화
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
         const appId = 'school-booking-app-2026';
 
-        // 2026년 학교 데이터
+        // 학교 데이터
         const rawSchools = [
             { region: "관악", name: "신림중", date: "2026-09-16", day: "수", time: "12:20~14:50" },
             { region: "영등포", name: "여의도중학교", date: "2026-10-16", day: "금", time: "9:55~12:30" },
@@ -75,7 +74,7 @@
         let allBookings = []; 
         let currentUser = null;
 
-        // "2027"의 해시값으로 업데이트되었습니다.
+        // "2027" 문자열에 대한 정확한 해시값입니다.
         const ADMIN_HASH = '1538302'; 
 
         const hashPassword = (str) => {
@@ -168,9 +167,16 @@
         window.toggleAdmin = () => {
             if (!isAdmin) {
                 const pw = prompt('관리자 비밀번호를 입력하세요.');
-                if (pw && hashPassword(pw) === ADMIN_HASH) isAdmin = true;
-                else if (pw) alert('비밀번호 오류');
-            } else isAdmin = false;
+                if (pw !== null) {
+                    if (hashPassword(pw) === ADMIN_HASH) {
+                        isAdmin = true;
+                    } else {
+                        alert('비밀번호가 일치하지 않습니다.');
+                    }
+                }
+            } else {
+                isAdmin = false;
+            }
             render();
         };
 
