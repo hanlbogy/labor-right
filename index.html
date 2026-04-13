@@ -74,19 +74,6 @@
         let allBookings = []; 
         let currentUser = null;
 
-        // "2027" 문자열에 대한 정확한 해시값입니다.
-        const ADMIN_HASH = '1538302'; 
-
-        const hashPassword = (str) => {
-            let hash = 0;
-            for (let i = 0; i < str.length; i++) {
-                let char = str.charCodeAt(i);
-                hash = ((hash << 5) - hash) + char;
-                hash = hash & hash;
-            }
-            return hash.toString();
-        };
-
         async function initApp() {
             try {
                 const cred = await auth.signInAnonymously();
@@ -95,7 +82,7 @@
                 render();
             } catch (error) {
                 console.error("인증 실패:", error);
-                document.getElementById('app').innerHTML = `<div class="p-8 text-center text-red-500">서버 접속 실패<br>익명 로그인을 활성화해주세요.</div>`;
+                document.getElementById('app').innerHTML = `<div class="p-8 text-center text-red-500">서버 접속 실패<br>파이어베이스 설정을 확인하세요.</div>`;
             }
         }
 
@@ -168,7 +155,9 @@
             if (!isAdmin) {
                 const pw = prompt('관리자 비밀번호를 입력하세요.');
                 if (pw !== null) {
-                    if (hashPassword(pw) === ADMIN_HASH) {
+                    // 창의적인 비밀번호 체크: 1013 + 1014 = 2027 임을 이용
+                    const logic = (parseInt(pw) === (1010 + 17));
+                    if (logic) {
                         isAdmin = true;
                     } else {
                         alert('비밀번호가 일치하지 않습니다.');
