@@ -11,7 +11,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
     <script>
-        // 파이어베이스 설정값
+        // 강사님의 파이어베이스 설정값
         const firebaseConfig = {
             apiKey: "AIzaSyDDQoegaPeFWypWdVsgRmzMr_Z7J6dwQt8",
             authDomain: "labor-7b138.firebaseapp.com",
@@ -27,7 +27,6 @@
         const db = firebase.firestore();
         const appId = 'school-booking-app-2026';
 
-        // 학교 데이터
         const rawSchools = [
             { region: "관악", name: "신림중", date: "2026-09-16", day: "수", time: "12:20~14:50" },
             { region: "영등포", name: "여의도중학교", date: "2026-10-16", day: "금", time: "9:55~12:30" },
@@ -155,9 +154,8 @@
             if (!isAdmin) {
                 const pw = prompt('관리자 비밀번호를 입력하세요.');
                 if (pw !== null) {
-                    // 창의적인 비밀번호 체크: 1013 + 1014 = 2027 임을 이용
-                    const logic = (parseInt(pw) === (1010 + 17));
-                    if (logic) {
+                    // 가장 확실한 문자열 비교 방식 (2027)
+                    if (pw === "2027") {
                         isAdmin = true;
                     } else {
                         alert('비밀번호가 일치하지 않습니다.');
